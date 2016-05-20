@@ -37,10 +37,8 @@ def get_desktop_environment():
 
                 desktop_session = desktop_session.replace('x-', '')
 
-            if desktop_session in ['gnome','unity', 'cinnamon', 'mate', 'xfce4', 'lxde', 'fluxbox',
-                                   'blackbox', 'openbox', 'icewm', 'jwm', 'afterstep','trinity', 'kde', 'pantheon',
-                                   'i3', 'lxqt']:
-
+            if desktop_session in '''afterstep blackbox cinnamon fluxbox gnome i3 icewm jwm kde
+                                     lxde lxqt mate openbox pantheon trinity unity xfce4'''.split():
                 return desktop_session
 
             #-- Special cases --#
