@@ -78,63 +78,44 @@ arg_parser.add_argument('-c', '--city', metavar='name', type=str,
 
 args = arg_parser.parse_args()
 
-if args.city is not None:
-
+if args.city:
     city = ' '.join(args.city).replace(' ', '%20')
-
 else:
-
     try:
-
         city = json.loads(urllib.request.urlopen('http://ipinfo.io/json').read().decode('utf-8'))
-
         city = city['city'].replace(' ', '%20')
-
     except:
-
         pass
 
-if args.time is not None: use_time = True
-else: use_time = False
+use_time = bool(args.time)
 
-if args.dir is not None:
-
+if args.dir:
     # User provided a directory
-
     walls_dir = os.path.abspath(args.dir)
-
     if not os.path.isdir(walls_dir):
-
         sys.stderr.write('Invalid directory %s.' % walls_dir)
-
         sys.exit(1)
 
 else:
-
-    if not os.path.isdir(os.path.join(os.path.expanduser('~'), '.weatherdesk_walls')):
-
-        os.mkdir(os.path.join(os.path.expanduser('~'), '.weatherdesk_walls'))
-
-        sys.stderr.write('No directory specified. Creating in ' +
-        os.path.expanduser('~/.weatherdesk_walls') + '... Put files there or specify directory with --dir')
-
+    walls_dir = os.path.join(os.path.expanduser('~'), '.weatherdesk_walls')
+    if not os.path.isdir(walls_dir):
+        os.mkdir(walls_dir)
+        fmt = 'No directory specified. Creating in {}... Put files there or specify directory with --dir'
+        sys.stderr.write(fmt.format(walls_dir))
         sys.exit(1)
 
-    walls_dir = os.path.join(os.path.expanduser('~'), '.weatherdesk_walls')
-
-if args.format is not None:
-
-    if not args.format.startswith('.'): args.format = ''.join(('.', args.format))
-
+if args.format:
+    if not args.format.startswith('.'):
+        args.format = '.' + args.format
     file_format = args.format
+else:
+    file_format = '.jpg'
 
-else: file_format = '.jpg'
+wait_time = args.wait or 600  # ten minutes
 
-if args.wait is not None: wait_time = args.wait
-
-else: wait_time = 600  # ten minutes
-
-if args.naming: print(NAMING_RULES.format(file_format)); sys.exit(0)
+if args.naming:
+    print(NAMING_RULES.format(file_format))
+    sys.exit(0)
 
 #-- -- Arguments
 
@@ -165,17 +146,11 @@ def get_time_of_day(level=3):
 
     if level == 3:
 
-        if current_time.hour in range(6, 17):
+        if 6 <= current_time.hour < 17:
 
             return 'day'
 
-        elif current_time.hour in range(17, 20):
-
-            return 'evening'
-
-        else:
-
-            return 'night'
+        return 'evening' if 17 <= current_time.hour < 20 else 'night'
 
     elif level == 4:
 
@@ -187,23 +162,11 @@ def get_time_of_day(level=3):
 
             return 'day'
 
-        elif current_time.hour in range(17, 20):
-
-            return 'evening'
-
-        else:
-
-            return 'night'
+        return 'evening' if current_time.hour in range(17, 20) else 'night'
 
     else:
 
-        if current_time.hour in range(6, 20):
-
-            return 'day'
-
-        else:
-
-            return 'night'
+        return 'day' if current_time.hour in range(6, 20) else 'night'
 
 def get_file_name(weather_name, time=False):
 
@@ -246,7 +209,7 @@ def check_if_all_files_exist(time=False, level=3):
 
     all_exist = True
 
-    required_files = ['rain', 'snow', 'normal', 'cloudy', 'wind', 'thunder']
+    required_files = 'rain snow normal cloudy wind thunder'.split()
 
     if time:
 
